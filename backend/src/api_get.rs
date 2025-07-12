@@ -3,7 +3,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
-use serde::Deserialize;
 use serde_json::json;
 use sqlx::query;
 use sqlx::{Row, SqlitePool};
@@ -49,10 +48,84 @@ pub async fn get_review(
                 json!({"review_id": review_id, "user_id": user_id, "username": username, "media_id": media_id, "media_name": media_name, "rating": rating, "review_txt": review_txt}),
             )).into_response();
         }
-        Err(_) => {
+        Err(e) => {
+            eprintln!("{}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to retrieve review",
+            )
+                .into_response();
+        }
+    }
+}
+
+/*
+
+User
+
+*/
+
+pub async fn get_user(
+    State(pool): State<SqlitePool>,
+    Path(user_id): Path<String>,
+) -> impl IntoResponse {
+    let qry = "SELECT * FROM users WHERE user_id = $1";
+    let result = query(&qry)
+        .bind(user_id.parse::<i64>().unwrap())
+        .fetch_one(&pool)
+        .await;
+    match result {
+        Ok(row) => {
+            let user_id: i64 = row.get("user_id");
+            let username: String = row.get("username");
+            let bio: String = row.get("bio");
+
+            return (
+                StatusCode::OK,
+                Json(json!({"user_id": user_id, "username": username, "bio": bio})),
+            )
+                .into_response();
+        }
+        Err(e) => {
+            eprintln!("{}", e);
+            return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to retrieve user").into_response();
+        }
+    }
+}
+
+/*
+
+Media
+
+*/
+
+pub async fn get_media(
+    State(pool): State<SqlitePool>,
+    Path(media_id): Path<String>,
+) -> impl IntoResponse {
+    let qry = "SELECT * FROM media WHERE media_id = $1";
+    let result = query(&qry)
+        .bind(media_id.parse::<i64>().unwrap())
+        .fetch_one(&pool)
+        .await;
+    match result {
+        Ok(row) => {
+            let media_id: i64 = row.get("media_id");
+            let media_name: String = row.get("name");
+            let description: String = row.get("description");
+            let medium: String = row.get("medium");
+
+            return (
+                StatusCode::OK,
+                Json(json!({"media_id": media_id, "media_name": media_name, "description": description, "medium": medium})),
+            )
+                .into_response();
+        }
+        Err(e) => {
+            eprintln!("{}", e);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to retrieve media",
             )
                 .into_response();
         }
@@ -73,7 +146,8 @@ pub async fn get_page_home(State(pool): State<SqlitePool>) -> impl IntoResponse 
         Ok(reviews) => {
             return (StatusCode::OK, Json(json!({"reviews": reviews}))).into_response();
         }
-        Err(_) => {
+        Err(e) => {
+            eprintln!("{}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to retrieve home page",
@@ -108,16 +182,18 @@ pub async fn get_page_user(
 
             (StatusCode::OK, Json(json!({"user_id": user_id, "username": username, "bio": bio, "reviews": reviews}))).into_response()
         }
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to retrieve user page",
-        )
-            .into_response(),
+        Err(e) => {
+            eprintln!("{}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to retrieve user page",
+            )
+                .into_response()
+        }
     }
 }
 
 //Media
-
 pub async fn get_page_media(
     State(pool): State<SqlitePool>,
     Path(media_id): Path<String>,
@@ -143,7 +219,8 @@ pub async fn get_page_media(
 
             (StatusCode::OK, Json(json!({"media_id": media_id, "media_name": media_name, "description": description, "medium": medium, "reviews": reviews}))).into_response()
         }
-        Err(_) => {
+        Err(e) => {
+            eprintln!("{}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to retrieve media page",
@@ -154,6 +231,31 @@ pub async fn get_page_media(
 }
 
 //Medium
+pub async fn get_page_medium(
+    State(pool): State<SqlitePool>,
+    Path(medium): Path<String>,
+) -> impl IntoResponse {
+    let qry = "SELECT media_id FROM media WHERE medium = $1";
+    let result = query(&qry).bind(medium).fetch_all(&pool).await;
+    match result {
+        Ok(media_list) => {
+            let media_ids: Vec<i64> = media_list
+                .iter()
+                .map(|media| media.get("media_id"))
+                .collect();
+
+            (StatusCode::OK, Json(json!({"media_ids": media_ids}))).into_response()
+        }
+        Err(e) => {
+            eprintln!("{}", e);
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to retrieve medium page",
+            )
+                .into_response();
+        }
+    }
+}
 
 /*
 
@@ -199,7 +301,8 @@ pub async fn search_user(
             )
                 .into_response()
         }
-        Err(_) => {
+        Err(e) => {
+            eprintln!("{}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to retrieve user search result",
@@ -235,7 +338,8 @@ pub async fn search_media(
             )
                 .into_response()
         }
-        Err(_) => {
+        Err(e) => {
+            eprintln!("{}", e);
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to retrieve media search result",
@@ -251,20 +355,14 @@ Login
 
 */
 
-#[derive(Deserialize)]
-pub struct LoginRequest {
-    pub username: String,
-    pub password: String,
-}
-
 pub async fn login(
     State(pool): State<SqlitePool>,
-    Json(login): Json<LoginRequest>,
+    Path(path): Path<(String, String)>,
 ) -> impl IntoResponse {
     let qry = "SELECT user_id, username FROM users WHERE username = $1 AND password = $2";
     let result = query(&qry)
-        .bind(login.username)
-        .bind(login.password)
+        .bind(path.0)
+        .bind(path.1)
         .fetch_optional(&pool)
         .await;
     match result {
@@ -282,10 +380,13 @@ pub async fn login(
             Json(json!({"success": false, "user_id" : -1, "username": ""})),
         )
             .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Failed to process login attempt",
-        )
-            .into_response(),
+        Err(e) => {
+            eprintln!("{}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to process login attempt",
+            )
+                .into_response()
+        }
     }
 }

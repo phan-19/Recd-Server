@@ -28,11 +28,14 @@ pub async fn add_user(
             Json(json!({"status": "success", "message": "User added"})),
         )
             .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({"status": "error", "message": "Adding user failed"})),
-        )
-            .into_response(),
+        Err(e) => {
+            eprintln!("{}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error", "message": "Adding user failed"})),
+            )
+                .into_response()
+        }
     }
 }
 #[derive(Deserialize)]
@@ -67,11 +70,14 @@ pub async fn add_review(
             Json(json!({"status": "success", "message": "Review added"})),
         )
             .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({"status": "error", "message": "Posting review failed"})),
-        )
-            .into_response(),
+        Err(e) => {
+            eprintln!("{}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error", "message": "Posting review failed"})),
+            )
+                .into_response()
+        }
     }
 }
 #[derive(Deserialize)]
@@ -97,10 +103,13 @@ pub async fn add_media(
             Json(json!({"status": "success", "message": "Media added"})),
         )
             .into_response(),
-        Err(_) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({"status": "error", "message": "Adding media failed"})),
-        )
-            .into_response(),
+        Err(e) => {
+            eprintln!("{}", e);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"status": "error", "message": "Adding media failed"})),
+            )
+                .into_response()
+        }
     }
 }
