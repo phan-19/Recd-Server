@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './UserProfile.css'
+import Card from "../../components/assets/card/Card";
 
 import UserLogin from '../user-login/UserLogin';
 
@@ -11,10 +12,15 @@ type User = {
 type Profile = {
     user_id: number,
     username: string,
-    bio: string
+    bio: string,
+    reviews: number[]
 }
 
-const UserProfile: React.FC = () => {
+type UserProps = {
+    user_id: number
+}
+
+const UserProfile: React.FC<UserProps> = ({ user_id }) => {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
@@ -25,7 +31,7 @@ const UserProfile: React.FC = () => {
             const storedUser: User = JSON.parse(stored);
             setUser(storedUser);
 
-            fetch(`http://66.231.155.18:3000/page/user/${storedUser.user_id}`)
+            fetch(`http://66.231.155.18:3000/page/user/${user_id}`)
                 .then(response => response.json())
                 .then(data => {
                     setProfile(data);
@@ -52,7 +58,7 @@ const UserProfile: React.FC = () => {
     };
 
     if (loading) {
-        return <p>Loading...</p>; 
+        return <p>Loading...</p>;
     }
 
     if (!user) {
@@ -63,12 +69,20 @@ const UserProfile: React.FC = () => {
         return <p>Loading profile...</p>;
     }
 
+    const logOutButton = () => {
+        if (user.user_id === profile.user_id) {
+            return (<button onClick={handleLogout}>Log Out</button>)
+        }
+        return (<></>)
+    };
+
     return (
         <div className="profile">
             <div className='profile-content'>
                 <h2 className='username'>{'@'}{profile.username}</h2>
                 <p className='bio'>{profile.bio}</p>
-                <button onClick={handleLogout}>Log Out</button>
+                <Card.CardScroll reviews={profile.reviews} />
+                <>{logOutButton}</>
             </div>
         </div>
     );

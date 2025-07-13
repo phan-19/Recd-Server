@@ -25,10 +25,10 @@ function App() {
   const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
-      const stored = localStorage.getItem('user');
-      if (stored) {
-          setUser(JSON.parse(stored));
-      }
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
   }, []);
 
   const handleLogin = (user: User) => {
@@ -42,27 +42,27 @@ function App() {
   }
 
   if (!user) {
-  return showSignup ? (
-    <>
-    <div className='form'>
-      <Signup onSignup={handleSignup} />
-      <p>
-        Already have an account?{' '}
-        <button onClick={() => setShowSignup(false)}>Log In</button>
-      </p>
-      </div>
-    </>
-  ) : (
-    <>
-    <div className='form'>
-      <Login onLogin={handleLogin} />
-      <p>
-        Don't have an account?{' '}
-        <button onClick={() => setShowSignup(true)}>Sign Up</button>
-      </p>
-      </div>
-    </>
-  );
+    return showSignup ? (
+      <>
+        <div className='form'>
+          <Signup onSignup={handleSignup} />
+          <p>
+            Already have an account?{' '}
+            <button onClick={() => setShowSignup(false)}>Log In</button>
+          </p>
+        </div>
+      </>
+    ) : (
+      <>
+        <div className='form'>
+          <Login onLogin={handleLogin} />
+          <p>
+            Don't have an account?{' '}
+            <button onClick={() => setShowSignup(true)}>Sign Up</button>
+          </p>
+        </div>
+      </>
+    );
   }
 
   const renderPage = () => {
@@ -88,8 +88,8 @@ function App() {
         <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage}></Navbar>
       </header>
       <div>
-      {renderPage()}
-    </div>
+        {renderPage()}
+      </div>
     </div>
   );
 }

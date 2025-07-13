@@ -46,11 +46,17 @@ const Card: React.FC<CardProps> = ({ cardStyle, review_id }) => {
 
     useEffect(() => { loadCardData(); }, []);
 
+    const routeToMedia = () => {
+        console.log("button! :D");
+    };
+
     return (
         <div className={cardStyle}>
             <div className='card-content'>
-                <h2 className='card-media-name'>{media_name}</h2>
-                <h4 className='card-username'>Review by: {username}</h4>
+                <button className='card-media-name' onClick={routeToMedia}>{media_name}</button>
+                <h4 className='card-username'>Review by: {' '}
+                    <button className='card-username-button' onClick={routeToMedia}>{username}</button>
+                </h4>
                 <p className='card-rating'>{rating}/5</p>
                 <p className='card-description'>{review_txt}</p>
             </div>
