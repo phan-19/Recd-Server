@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 #backend build and debug folder
-backend/target/
+target/

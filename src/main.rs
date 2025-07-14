@@ -36,7 +36,7 @@ async fn main() {
         .allow_origin(Any)
         .allow_headers([CONTENT_TYPE]);
 
-    let db_url = "sqlite://recd.db";
+    let db_url = "sqlite://../recd.db";
     let pool = SqlitePool::connect(db_url).await.unwrap();
 
     let app = Router::new()
