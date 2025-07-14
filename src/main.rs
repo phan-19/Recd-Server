@@ -1,8 +1,10 @@
 mod api_get;
 mod api_post;
+mod db_setup;
 
 use api_get::*;
 use api_post::*;
+use db_setup::*;
 
 use axum::{
     routing::{get, post},
@@ -38,6 +40,7 @@ async fn main() {
 
     let db_url = "sqlite://../recd.db";
     let pool = SqlitePool::connect(db_url).await.unwrap();
+    let _ = db_setup(&pool).await;
 
     let app = Router::new()
         .route("/review/{id}", get(get_review))
