@@ -40,7 +40,7 @@ async fn main() {
 
     let db_url = "sqlite://../recd.db";
     let pool = SqlitePool::connect(db_url).await.unwrap();
-    let _ = db_setup(&pool).await;
+    db_setup(&pool).await.expect("DB setup error");
 
     let app = Router::new()
         .route("/review/{id}", get(get_review))

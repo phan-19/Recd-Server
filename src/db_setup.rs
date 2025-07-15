@@ -4,7 +4,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
     let qry = "
         PRAGMA foreign_keys = ON; 
 
-        CREATE TABLE IF NOT EXSIST users (
+        CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY NOT NULL,
             username STRING NOT NULL,
             password STRING NOT NULL,
@@ -12,15 +12,15 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             profile_pic BLOB
         );
 
-        CREATE TABLE IF NOT EXSIST media (
+        CREATE TABLE IF NOT EXISTS media (
             media_id INTEGER PRIMARY KEY NOT NULL,
             media_name STRING NOT NULL,
             medium STRING NOT NULL,
-            description STRING NOT NULL
+            description STRING NOT NULL,
             image BLOB
         );
 
-        CREATE TABLE IF NOT EXSIST reviews (
+        CREATE TABLE IF NOT EXISTS reviews (
             review_id INTEGER PRIMARY KEY NOT NULL,
             user_id INTEGER,
             media_id INTEGER,
@@ -31,7 +31,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             FOREIGN KEY(media_id) REFERENCES media(media_id)
         );
 
-        CREATE TABLE IF NOT EXSIST following_user (
+        CREATE TABLE IF NOT EXISTS following_user (
             follower_id INTEGER,
             followed_id INTEGER,
             FOREIGN KEY(follower_id) REFERENCES users(user_id),
@@ -39,9 +39,9 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             UNIQUE(follower_id, followed_id)
         );
 
-        CREATE TABLE IF NOT EXSIST following_media (
+        CREATE TABLE IF NOT EXISTS following_media (
             follower_id INTEGER,
-            media_idINTEGER,
+            media_id INTEGER,
             FOREIGN KEY(follower_id) REFERENCES users(user_id),
             FOREIGN KEY(media_id) REFERENCES users(media_id),
             UNIQUE(follower_id, media_id)
