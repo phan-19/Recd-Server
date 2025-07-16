@@ -9,15 +9,17 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             username STRING NOT NULL,
             password STRING NOT NULL,
             bio STRING,
-            profile_pic BLOB
+            profile_pic BLOB,
+            UNIQUE(username)
         );
 
         CREATE TABLE IF NOT EXISTS media (
             media_id INTEGER PRIMARY KEY NOT NULL,
-            media_name STRING NOT NULL,
+            name STRING NOT NULL,
             medium STRING NOT NULL,
             description STRING NOT NULL,
-            image BLOB
+            image BLOB,
+            UNIQUE(media_name)
         );
 
         CREATE TABLE IF NOT EXISTS reviews (

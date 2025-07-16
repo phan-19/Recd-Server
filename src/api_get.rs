@@ -144,7 +144,17 @@ pub async fn get_page_home(State(pool): State<SqlitePool>) -> impl IntoResponse 
     let result = sqlx::query_scalar::<_, i64>(&qry).fetch_all(&pool).await;
     match result {
         Ok(reviews) => {
-            return (StatusCode::OK, Json(json!({"reviews": reviews}))).into_response();
+            let media_qry = "SELECT media_id FROM media ORDER BY media_id DESC LIMIT 10";
+            let media = sqlx::query_scalar::<_, i64>(&media_qry)
+                .fetch_all(&pool)
+                .await
+                .unwrap();
+
+            return (
+                StatusCode::OK,
+                Json(json!({"reviews": reviews, "media": media})),
+            )
+                .into_response();
         }
         Err(e) => {
             eprintln!("{}", e);
