@@ -48,6 +48,22 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             FOREIGN KEY(media_id) REFERENCES users(media_id),
             UNIQUE(follower_id, media_id)
         );
+
+        CREATE TABLE IF NOT EXISTS tags (
+            media_id INTEGER,
+            tag STRING NOT NULL,
+            FOREIGN KEY(media_id) REFERENCES media(media_id),
+            UNIQUE(media_id, tag)
+        );
+
+        CREATE TABLE IF NOT EXISTS todo (
+            user_id INTEGER,
+            media_id INTEGER,
+            status STRING NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(user_id),
+            FOREIGN KEY(media_id) REFERENCES media(media_id),
+            UNIQUE(user_id, media_id)
+        );
     ";
     query(&qry).execute(pool).await
 }
