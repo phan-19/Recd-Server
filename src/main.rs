@@ -1,29 +1,20 @@
-mod api_get;
-mod api_post;
+mod api_routes;
 mod db_setup;
 
-use api_get::*;
-use api_post::*;
+use api_routes::{
+    card::*, follow::*, image::*, login::*, media::*, page::*, review::*, search::*, tag::*,
+    todo::*, user::*,
+};
 use db_setup::*;
 
-use axum::{
-    routing::{get, post},
-    Router,
-};
-use http::header::CONTENT_TYPE;
-use http::Method;
+use axum::Router;
+use http::{header::CONTENT_TYPE, Method};
 use sqlx::SqlitePool;
-use tower_http::cors::{Any, CorsLayer};
-use tower_http::trace::{self, TraceLayer};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::{self, TraceLayer},
+};
 use tracing::Level;
-
-async fn get_test() -> &'static str {
-    "Connected to Recd with a GET request"
-}
-
-async fn post_test() -> &'static str {
-    "Connected to Recd with a POST request"
-}
 
 //main
 #[tokio::main]
@@ -43,20 +34,17 @@ async fn main() {
     db_setup(&pool).await.expect("DB setup error");
 
     let app = Router::new()
-        .route("/review/{id}", get(get_review))
-        .route("/user/{id}", get(get_user))
-        .route("/media/{id}", get(get_media))
-        .route("/page/home", get(get_page_home))
-        .route("/page/user/{id}", get(get_page_user))
-        .route("/page/media/{id}", get(get_page_media))
-        .route("/page/medium/{medium}", get(get_page_medium))
-        .route("/search/user/{term}", get(search_user))
-        .route("/search/media/{term}", get(search_media))
-        .route("/login/{username}/{password}", get(login))
-        .route("/review", post(add_review))
-        .route("/user", post(add_user))
-        .route("/media", post(add_media))
-        .route("/", get(get_test).post(post_test))
+        .nest("/card", card_routes())
+        .nest("/follow", follow_routes())
+        .nest("/image", image_routes())
+        .nest("/login", login_routes())
+        .nest("/media", media_routes())
+        .nest("/page", page_routes())
+        .nest("/review", review_routes())
+        .nest("/search", search_routes())
+        .nest("/tag", tag_routes())
+        .nest("/todo", todo_routes())
+        .nest("/user", user_routes())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))

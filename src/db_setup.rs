@@ -9,15 +9,17 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             username STRING NOT NULL,
             password STRING NOT NULL,
             bio STRING,
-            profile_pic BLOB
+            profile_pic BLOB,
+            UNIQUE(username)
         );
 
         CREATE TABLE IF NOT EXISTS media (
             media_id INTEGER PRIMARY KEY NOT NULL,
-            media_name STRING NOT NULL,
+            name STRING NOT NULL,
             medium STRING NOT NULL,
             description STRING NOT NULL,
-            image BLOB
+            image BLOB,
+            UNIQUE(media_name)
         );
 
         CREATE TABLE IF NOT EXISTS reviews (
@@ -45,6 +47,22 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             FOREIGN KEY(follower_id) REFERENCES users(user_id),
             FOREIGN KEY(media_id) REFERENCES users(media_id),
             UNIQUE(follower_id, media_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS tags (
+            media_id INTEGER,
+            tag STRING NOT NULL,
+            FOREIGN KEY(media_id) REFERENCES media(media_id),
+            UNIQUE(media_id, tag)
+        );
+
+        CREATE TABLE IF NOT EXISTS todo (
+            user_id INTEGER,
+            media_id INTEGER,
+            status STRING NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(user_id),
+            FOREIGN KEY(media_id) REFERENCES media(media_id),
+            UNIQUE(user_id, media_id)
         );
     ";
     query(&qry).execute(pool).await
