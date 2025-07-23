@@ -99,7 +99,7 @@ async fn get_review_card(
             ON
                 reviews.media_id = media.media_id
         WHERE reviews.review_id = $1";
-    match sqlx::query_as::<_, MediaCard>(&sql)
+    match sqlx::query_as::<_, ReviewCard>(&sql)
         .bind(path)
         .fetch_one(&pool)
         .await
