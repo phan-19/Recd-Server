@@ -45,7 +45,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             user_id INTEGER,
             media_id INTEGER,
             FOREIGN KEY(user_id) REFERENCES users(user_id),
-            FOREIGN KEY(media_id) REFERENCES users(media_id),
+            FOREIGN KEY(media_id) REFERENCES media(media_id),
             UNIQUE(user_id, media_id)
         );
 
