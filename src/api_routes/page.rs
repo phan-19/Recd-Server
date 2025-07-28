@@ -14,7 +14,7 @@ pub fn page_routes() -> Router<Pool<sqlx::Sqlite>> {
         .route("/home/{id}", get(get_page_home))
         .route("/user/{id}", get(get_page_user))
         .route("/media/{id}", get(get_page_media))
-        .route("/medium/{medium}", get(get_page_medium))
+        .route("/medium/{id}/{medium}", get(get_page_medium))
 }
 
 async fn get_page_home(State(pool): State<SqlitePool>, Path(path): Path<i64>) -> impl IntoResponse {

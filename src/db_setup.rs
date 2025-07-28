@@ -15,7 +15,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
 
         CREATE TABLE IF NOT EXISTS media (
             media_id INTEGER PRIMARY KEY NOT NULL,
-            name STRING NOT NULL,
+            media_name STRING NOT NULL,
             medium STRING NOT NULL,
             description STRING NOT NULL,
             image BLOB,
@@ -42,11 +42,11 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
         );
 
         CREATE TABLE IF NOT EXISTS following_media (
-            follower_id INTEGER,
+            user_id INTEGER,
             media_id INTEGER,
-            FOREIGN KEY(follower_id) REFERENCES users(user_id),
-            FOREIGN KEY(media_id) REFERENCES users(media_id),
-            UNIQUE(follower_id, media_id)
+            FOREIGN KEY(user_id) REFERENCES users(user_id),
+            FOREIGN KEY(media_id) REFERENCES media(media_id),
+            UNIQUE(user_id, media_id)
         );
 
         CREATE TABLE IF NOT EXISTS tags (
@@ -59,7 +59,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
         CREATE TABLE IF NOT EXISTS todo (
             user_id INTEGER,
             media_id INTEGER,
-            status STRING NOT NULL,
+            status STRING NOT NULL DEFAULT 'todo',
             FOREIGN KEY(user_id) REFERENCES users(user_id),
             FOREIGN KEY(media_id) REFERENCES media(media_id),
             UNIQUE(user_id, media_id)

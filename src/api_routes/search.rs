@@ -19,7 +19,7 @@ async fn get_search_user(
     State(pool): State<SqlitePool>,
     Path(path): Path<String>,
 ) -> impl IntoResponse {
-    let sql = "SELECT user_id FROM users WHERE username LIKE $1";
+    let sql = "SELECT user_id FROM users WHERE username LIKE $1 LIMIT 50";
     match sqlx::query_scalar::<_, i64>(&sql)
         .bind(format!("%{}%", path))
         .fetch_all(&pool)
@@ -38,7 +38,7 @@ async fn get_search_media(
     State(pool): State<SqlitePool>,
     Path(path): Path<String>,
 ) -> impl IntoResponse {
-    let sql = "SELECT media_id FROM media WHERE media_name LIKE $1";
+    let sql = "SELECT media_id FROM media WHERE media_name LIKE $1 LIMIT 50";
     match sqlx::query_scalar::<_, i64>(&sql)
         .bind(format!("%{}%", path))
         .fetch_all(&pool)

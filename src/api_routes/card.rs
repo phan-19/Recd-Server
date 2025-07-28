@@ -20,11 +20,12 @@ pub fn card_routes() -> Router<sqlx::Pool<sqlx::Sqlite>> {
 struct UserCard {
     user_id: i64,
     username: String,
+    bio: String,
     profile_pic: Vec<u8>,
 }
 
 async fn get_user_card(State(pool): State<SqlitePool>, Path(path): Path<i64>) -> impl IntoResponse {
-    let sql = "SELECT user_id, username, profile_pic FROM users WHERE user_id = $1";
+    let sql = "SELECT user_id, username, bio, profile_pic FROM users WHERE user_id = $1";
     match sqlx::query_as::<_, UserCard>(&sql)
         .bind(path)
         .fetch_one(&pool)
@@ -99,7 +100,7 @@ async fn get_review_card(
             ON
                 reviews.media_id = media.media_id
         WHERE reviews.review_id = $1";
-    match sqlx::query_as::<_, MediaCard>(&sql)
+    match sqlx::query_as::<_, ReviewCard>(&sql)
         .bind(path)
         .fetch_one(&pool)
         .await
