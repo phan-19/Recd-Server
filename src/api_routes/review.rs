@@ -1,3 +1,4 @@
+use crate::media_info::*;
 use axum::{
     extract::{Path, State},
     http::StatusCode,
@@ -37,11 +38,14 @@ async fn post_review(
         .fetch_one(&pool)
         .await
     {
-        Ok(result) => (
-            StatusCode::OK,
-            Json(json!({"result": true, "review_id": result})),
-        )
-            .into_response(),
+        Ok(result) => {
+            let _ = recalc_media(&pool, input.media_id);
+            (
+                StatusCode::OK,
+                Json(json!({"result": true, "review_id": result})),
+            )
+                .into_response()
+        }
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(json!({"result": false, "error": e.to_string()})),

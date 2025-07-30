@@ -20,7 +20,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
             description STRING NOT NULL,
             image BLOB,
             review_count INTEGER DEFAULT 0,
-            average_rating INTEGER DEFAULT 0, 
+            average_rating REAL DEFAULT 0, 
             UNIQUE(media_name)
         );
 
