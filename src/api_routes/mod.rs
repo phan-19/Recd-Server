@@ -1,3 +1,4 @@
+pub mod admin;
 pub mod card;
 pub mod follow;
 pub mod image;

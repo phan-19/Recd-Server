@@ -1,14 +1,4 @@
-use axum::{
-    extract::{Path, State},
-    http::StatusCode,
-    response::IntoResponse,
-    routing::get,
-    Json, Router,
-};
-use futures::future::OkInto;
-use serde::Serialize;
-use serde_json::json;
-use sqlx::{prelude::FromRow, query, query_scalar, Error, Row, SqlitePool};
+use sqlx::{query, query_scalar, Row, SqlitePool};
 
 pub async fn add_rating(pool: &SqlitePool, media_id: i64, rating: i64) -> Result<(), sqlx::Error> {
     let sql = "SELECT reivew_count, average_rating FROM media WHERE media_id = $1";

@@ -3,8 +3,8 @@ mod db_setup;
 mod media_info;
 
 use api_routes::{
-    card::*, follow::*, image::*, login::*, media::*, page::*, review::*, search::*, tag::*,
-    todo::*, user::*,
+    admin::*, card::*, follow::*, image::*, login::*, media::*, page::*, review::*, search::*,
+    tag::*, todo::*, user::*,
 };
 use db_setup::*;
 
@@ -46,6 +46,7 @@ async fn main() {
         .nest("/tag", tag_routes())
         .nest("/todo", todo_routes())
         .nest("/user", user_routes())
+        .nest("/admin", admin_routes())
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))

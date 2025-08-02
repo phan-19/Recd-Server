@@ -39,7 +39,7 @@ async fn post_review(
         .await
     {
         Ok(result) => {
-            let _ = recalc_media(&pool, input.media_id);
+            let _ = add_rating(&pool, input.media_id, input.rating);
             (
                 StatusCode::OK,
                 Json(json!({"result": true, "review_id": result})),
