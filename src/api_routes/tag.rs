@@ -25,14 +25,30 @@ async fn post_tag(
     State(pool): State<SqlitePool>,
     Json(input): Json<PostTagRequest>,
 ) -> impl IntoResponse {
-    let sql = "INSERT INTO tag (media_id, tag) VALUES ($1, $2)";
-    match query(&sql)
+    let sql = "INSERT OR IGNORE INTO tags (media_id, tag) VALUES ($1, $2) RETURNING count";
+    match sqlx::query_scalar::<_, i64>(&sql)
         .bind(input.media_id)
-        .bind(input.tag)
-        .execute(&pool)
+        .bind(input.tag.clone())
+        .fetch_one(&pool)
         .await
     {
-        Ok(_) => (StatusCode::OK, Json(json!({"result": true}))).into_response(),
+        Ok(result) => {
+            let sql = "UPDATE tags SET count = $1 WHERE media_id = $2 AND tag = $3";
+            match query(&sql)
+                .bind(result + 1)
+                .bind(input.media_id)
+                .bind(input.tag.clone())
+                .execute(&pool)
+                .await
+            {
+                Ok(_) => (StatusCode::OK, Json(json!({"result": true}))).into_response(),
+                Err(e) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({"result": false, "error": e.to_string()})),
+                )
+                    .into_response(),
+            }
+        }
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(json!({"result": false, "error": e.to_string()})),
@@ -45,7 +61,7 @@ async fn delete_tag(
     State(pool): State<SqlitePool>,
     Path(path): Path<(i64, String)>,
 ) -> impl IntoResponse {
-    let sql = "DELETE FROM tag WHERE media_id = $1 AND tag = $2";
+    let sql = "DELETE FROM tags WHERE media_id = $1 AND tag = $2";
     match query(&sql).bind(path.0).bind(path.1).execute(&pool).await {
         Ok(_) => (StatusCode::OK, Json(json!({"result": true}))).into_response(),
         Err(e) => (

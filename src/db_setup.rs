@@ -54,6 +54,7 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
         CREATE TABLE IF NOT EXISTS tags (
             media_id INTEGER,
             tag STRING NOT NULL,
+            count INTEGER DEFAULT 0, 
             FOREIGN KEY(media_id) REFERENCES media(media_id),
             UNIQUE(media_id, tag)
         );

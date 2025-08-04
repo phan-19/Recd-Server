@@ -7,7 +7,7 @@ use axum::{
 };
 use serde::Serialize;
 use serde_json::json;
-use sqlx::{prelude::FromRow, Pool, SqlitePool};
+use sqlx::{prelude::FromRow, query, Pool, Row, SqlitePool};
 
 pub fn page_routes() -> Router<Pool<sqlx::Sqlite>> {
     Router::new()
@@ -131,6 +131,8 @@ struct MediaPage {
     description: String,
     medium: String,
     image: Vec<u8>,
+    review_count: i64,
+    average_rating: f64,
 }
 
 async fn get_page_media(
@@ -138,7 +140,7 @@ async fn get_page_media(
     Path(path): Path<i64>,
 ) -> impl IntoResponse {
     let media_sql =
-        "SELECT media_id, media_name, description, medium, image FROM media WHERE media_id = $1";
+        "SELECT media_id, media_name, description, medium, image, review_count, average_rating FROM media WHERE media_id = $1";
     let media = match sqlx::query_as::<_, MediaPage>(&media_sql)
         .bind(path)
         .fetch_one(&pool)
@@ -170,13 +172,16 @@ async fn get_page_media(
         }
     };
 
-    let tags_sql = "SELECT tag FROM tags WHERE media_id = $1";
-    let tags = match sqlx::query_scalar::<_, String>(&tags_sql)
-        .bind(&path)
-        .fetch_all(&pool)
-        .await
-    {
-        Ok(result) => result,
+    let tags_sql = "SELECT tag, count FROM tags WHERE media_id = $1";
+    let tags: Vec<(String, i64)> = match query(&tags_sql).bind(&path).fetch_all(&pool).await {
+        Ok(result) => result
+            .iter()
+            .map(|row| {
+                let tag: String = row.get("tag");
+                let count: i64 = row.get("count");
+                (tag, count)
+            })
+            .collect(),
         Err(e) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -188,7 +193,7 @@ async fn get_page_media(
 
     (
         StatusCode::OK,
-        Json(json!({"media_id": media.media_id, "media_name": media.media_name, "description": media.description, "medium": media.medium, "image":media.image, "reviews": reviews, "tags":tags})),
+        Json(json!({"media_id": media.media_id, "media_name": media.media_name, "description": media.description, "medium": media.medium, "image": media.image, "review_count": media.review_count, "average_rating": media.average_rating, "reviews": reviews, "tags": tags})),
     )
         .into_response()
 }
