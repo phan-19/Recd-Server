@@ -61,7 +61,6 @@ pub async fn db_setup(pool: &SqlitePool) -> Result<sqlx::sqlite::SqliteQueryResu
         CREATE TABLE IF NOT EXISTS todo (
             user_id INTEGER,
             media_id INTEGER,
-            status STRING NOT NULL DEFAULT 'todo',
             FOREIGN KEY(user_id) REFERENCES users(user_id),
             FOREIGN KEY(media_id) REFERENCES media(media_id),
             UNIQUE(user_id, media_id)

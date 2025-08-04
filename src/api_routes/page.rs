@@ -9,6 +9,8 @@ use serde::Serialize;
 use serde_json::json;
 use sqlx::{prelude::FromRow, Pool, SqlitePool};
 
+use crate::recommendation::generate_recommendations;
+
 pub fn page_routes() -> Router<Pool<sqlx::Sqlite>> {
     Router::new()
         .route("/home/{id}", get(get_page_home))
@@ -24,11 +26,7 @@ async fn get_page_home(State(pool): State<SqlitePool>, Path(path): Path<i64>) ->
     }
     let _ = generate_home_page(path);
 
-    let recommended_sql = "SELECT media_id FROM media ORDER BY media_id DESC LIMIT 10";
-    let recommended = match sqlx::query_scalar::<_, i64>(&recommended_sql)
-        .fetch_all(&pool)
-        .await
-    {
+    let mut recommended = match generate_recommendations(&pool, path, "any".to_string()).await {
         Ok(result) => result,
         Err(e) => {
             return (
@@ -68,6 +66,17 @@ async fn get_page_home(State(pool): State<SqlitePool>, Path(path): Path<i64>) ->
                 .into_response();
         }
     };
+
+    if recommended.len() < 10 {
+        for id in recent.iter() {
+            if !recommended.contains(id) {
+                recommended.push(*id);
+                if recommended.len() >= 10 {
+                    break;
+                }
+            }
+        }
+    }
 
     (
         StatusCode::OK,
@@ -197,13 +206,7 @@ async fn get_page_medium(
     State(pool): State<SqlitePool>,
     Path(path): Path<(i64, String)>,
 ) -> impl IntoResponse {
-    let recommended_sql =
-        "SELECT media_id FROM media WHERE medium = $1 ORDER BY media_id DESC LIMIT 10";
-    let recommended = match sqlx::query_scalar::<_, i64>(&recommended_sql)
-        .bind(&path.1)
-        .fetch_all(&pool)
-        .await
-    {
+    let mut recommended = match generate_recommendations(&pool, path.0, path.1.clone()).await {
         Ok(result) => result,
         Err(e) => {
             return (
@@ -229,6 +232,17 @@ async fn get_page_medium(
                 .into_response();
         }
     };
+
+    if recommended.len() < 10 {
+        for id in recent.iter() {
+            if !recommended.contains(id) {
+                recommended.push(*id);
+                if recommended.len() >= 10 {
+                    break;
+                }
+            }
+        }
+    }
 
     (
         StatusCode::OK,

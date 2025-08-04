@@ -1,5 +1,6 @@
 mod api_routes;
 mod db_setup;
+mod recommendation;
 
 use api_routes::{
     card::*, follow::*, image::*, login::*, media::*, page::*, review::*, search::*, tag::*,
