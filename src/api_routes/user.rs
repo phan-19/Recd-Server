@@ -28,20 +28,16 @@ async fn post_user(
     State(pool): State<SqlitePool>,
     Json(input): Json<PostUserRequest>,
 ) -> impl IntoResponse {
-    let sql = "INSERT INTO users (username, password, bio, profile_pic) VALUES ($1, $2, $3, $4) RETURNING user_id";
-    match sqlx::query_scalar::<_, i64>(&sql)
+    let sql = "INSERT INTO users (username, password, bio, profile_pic) VALUES ($1, $2, $3, $4)";
+    match query(&sql)
         .bind(input.username)
         .bind(input.password)
         .bind(input.bio)
         .bind(input.profile_pic)
-        .fetch_one(&pool)
+        .execute(&pool)
         .await
     {
-        Ok(result) => (
-            StatusCode::OK,
-            Json(json!({"result": true, "user_id": result})),
-        )
-            .into_response(),
+        Ok(_) => (StatusCode::OK, Json(json!({"result": true}))).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(json!({"result": false, "error": e.to_string()})),
